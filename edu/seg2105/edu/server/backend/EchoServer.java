@@ -4,6 +4,9 @@ package edu.seg2105.edu.server.backend;
 // license found at www.lloseng.com 
 
 
+import java.io.IOException;
+
+import edu.seg2105.client.common.ChatIF;
 import ocsf.server.*;
 
 /**
@@ -19,10 +22,15 @@ public class EchoServer extends AbstractServer
 {
   //Class variables *************************************************
   
+  String loginKey = "loginID";
+  
+  String isLoggedIn;
   /**
    * The default port to listen on.
    */
   final public static int DEFAULT_PORT = 5555;
+  
+  ChatIF sc;
   
   //Constructors ****************************************************
   
@@ -47,9 +55,57 @@ public class EchoServer extends AbstractServer
    */
   public void handleMessageFromClient
     (Object msg, ConnectionToClient client)
+  {	
+	  
+	  	 //server handles client login
+	     if(msg.toString().startsWith("#login")) {
+	    	 
+	    	 if(client.getInfo(isLoggedIn)!= "logged in") {
+	    		 handleLoginInfo(msg.toString(), client);
+	    	 }
+	    	 else {
+	    		 System.out.println(client.getInfo(loginKey) + " is already logged in");
+	    	 }
+	     }
+	     else {
+	    	 System.out.println("Message received: " + msg.toString() + " from " + client.getInfo(loginKey));
+			 this.sendToAllClients(msg);
+	     }
+  }
+  
+  //method to handle case where #login is called
+  public void handleLoginInfo(String msg, ConnectionToClient client) {
+	  
+	  String[] cmd = msg.split(" ");
+	  
+	  //since message being sent to server at connection is #login <loginID>, retrieve the loginID string and set it in the hashmap
+	  if(cmd.length > 1) {
+		  String login = cmd[1];
+		  client.setInfo(loginKey, login);
+		  client.setInfo(isLoggedIn, "logged in");
+		  System.out.println("Message recieved: "+ msg + " from null");
+		  System.out.println(login + " has logged in");
+		  try {
+			client.sendToClient(login + " has logged in");
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	  }
+	  
+	 
+  }
+  
+  /**
+   * This method terminates the server.
+   */
+  public void quit()
   {
-    System.out.println("Message received: " + msg + " from " + client);
-    this.sendToAllClients(msg);
+    try
+    {
+      close();
+    }
+    catch(IOException e) {}
+    System.exit(0);
   }
     
   /**
@@ -72,6 +128,19 @@ public class EchoServer extends AbstractServer
       ("Server has stopped listening for connections.");
   }
   
+  /**
+   * Implements the hook method called each time a new client connection is
+   * accepted. The default implementation does nothing.
+   * @param client the connection connected to the client.
+   */
+  @Override
+  protected void clientConnected(ConnectionToClient client) {
+	  System.out.println("User has connected to server");
+  }
+  
+  synchronized protected void clientDisconnected(ConnectionToClient client) {
+	  System.out.println("User has disconnected from server");
+  }
   
   //Class methods ***************************************************
   
@@ -82,6 +151,7 @@ public class EchoServer extends AbstractServer
    * @param args[0] The port number to listen on.  Defaults to 5555 
    *          if no argument is entered.
    */
+  /*
   public static void main(String[] args) 
   {
     int port = 0; //Port to listen on
@@ -106,5 +176,7 @@ public class EchoServer extends AbstractServer
       System.out.println("ERROR - Could not listen for clients!");
     }
   }
+  */
+  
 }
 //End of EchoServer class
