@@ -1,3 +1,8 @@
+/*Bob Yang
+ *November 8, 2023
+ *Server console class to display server side
+ */
+
 import java.io.*;
 import java.util.Scanner;
 
@@ -44,7 +49,8 @@ public class ServerConsole implements ChatIF{
 	    {
 
 	      String message;
-
+	      
+	      //read lines from console and handle command messages
 	      while (true) 
 	      {
 	        message = fromConsole.nextLine();
@@ -66,6 +72,8 @@ public class ServerConsole implements ChatIF{
 	  }
 	
 	  private void handleCommand(String command) {
+		  
+		  //causes the server to quit gracefully
 		  if(command.equals("#quit")) {
 			  display("Server quitting");
 			  echo.sendToAllClients("SERVER MSG> Server quitting");
@@ -73,9 +81,11 @@ public class ServerConsole implements ChatIF{
 			  System.exit(0);
 			  
 		  }
+		  //server stops listening to clients
 		  else if(command.equals("#stop")) {
 			  echo.stopListening();
 		  }
+		  //server stops listening to clients and also disconnects clients
 		  else if(command.equals("#close")) {
 			  try {
 				  echo.close();
@@ -85,6 +95,7 @@ public class ServerConsole implements ChatIF{
 				  display("Could not close server");
 			  }
 		  }
+		  //sets the port only allowed if server is not listening
 		  else if(command.startsWith("#setport")) {
 			  if(!echo.isListening()) {
 				  String [] input = command.split(" ");
@@ -102,6 +113,7 @@ public class ServerConsole implements ChatIF{
 				  display("Can only use if server is closed");
 			  }
 		  }
+		  //causes the server to start listening only if it is not already listening
 		  else if(command.equals("#start")) {
 			  if(!echo.isListening()) {
 				  try {
@@ -115,6 +127,7 @@ public class ServerConsole implements ChatIF{
 				  display("Only valid if server is stopped");
 			  }
 		  }
+		  //retrieves the port
 		  else if(command.equals("#getport")) {
 			  display("Port: " + echo.getPort());
 		  }
